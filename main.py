@@ -26,6 +26,42 @@ pygame.display.set_caption('Cool math game!')
 running = True
 SCORE = 0
 
+
+class BackgroundMoving():
+    def __init__(self):
+        pass
+
+    def update(self):
+        pass
+
+    def render(self):
+        pass
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        # self.image = pygame.image.load("Player.png")
+        # self.surf = pygame.Surface((40, 75))
+        # self.rect = self.surf.get_rect(center = (160, 520))
+
+    def update(self):
+        pass
+
+
+class Question:
+    def __init__(self):
+        pass
+
+
+class FinalQuestion(Question):
+    def __init__(self):
+        super().__init__()
+
+
+bg = BackgroundMoving()
+player = Player()
+
 # Game loop
 while running:
     events = pygame.event.get()
