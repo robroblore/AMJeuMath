@@ -1,5 +1,4 @@
 import sys
-
 import pygame
 import math
 import random
@@ -14,36 +13,30 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # Window variables
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 700
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 FPS = 60
-FPSObj = pygame.time.Clock()
-display = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-display.fill(WHITE)
+clock = pygame.time.Clock()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen_rect = screen.get_rect()
+screen.fill(WHITE)
 pygame.display.set_caption('Cool math game!')
 
 # Global variables
 running = True
-SCORE = 0
 
 
-class BackgroundMoving():
-    def __init__(self):
-        pass
-
-    def update(self):
-        pass
-
-    def render(self):
-        pass
+# Font setup
+font = pygame.font.Font("STIXTwoMath-Regular.ttf", 50)
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # self.image = pygame.image.load("Player.png")
-        # self.surf = pygame.Surface((40, 75))
-        # self.rect = self.surf.get_rect(center = (160, 520))
+        self.image = pygame.image.load("player.png")
+        self.rect = self.image.get_rect()
+
+        self.score = 0
 
     def update(self):
         pass
@@ -59,12 +52,27 @@ class FinalQuestion(Question):
         super().__init__()
 
 
-bg = BackgroundMoving()
+bg = pygame.image.load("bg.png").convert()
+tiles = math.ceil(SCREEN_WIDTH / bg.get_width()) + 1
+scroll = 0
+
+all_sprites = pygame.sprite.Group()
+
 player = Player()
+
+player.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1])
+all_sprites.add(player)
 
 # Game loop
 while running:
     events = pygame.event.get()
+
+    # Draw background
+    for i in range(tiles):
+        screen.blit(bg, (i * bg.get_width() + scroll, 0))
+    scroll -= 5
+    if abs(scroll) > bg.get_width():
+        scroll = 0
 
     for event in events:
         # Manage input
@@ -75,8 +83,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    all_sprites.update()
+    all_sprites.draw(screen)
+
+
     pygame.display.update()
-    FPSObj.tick(FPS)
+    clock.tick(FPS)
 
 pygame.quit()
 sys.exit()
