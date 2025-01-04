@@ -35,8 +35,7 @@ font = pygame.font.Font("assets/STIXTwoMath-Regular.ttf", FONT_SIZE)
 QUESTIONS = dict()
 
 with open("QUESTIONS.txt", "r", encoding='utf-8') as file:
-    lines = file.readlines()
-    for line in lines:
+    for line in file.readlines():
         line = line.split(":")
         QUESTIONS[line[0]] = line[1].rstrip()
 
