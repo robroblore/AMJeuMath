@@ -47,7 +47,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (516, 688))
         self.rect = self.image.get_rect()
 
-        self.offset = {"Katha": 240, "Robert": 100, "Siem": 0}[skin]
+        self.offset = {"Katha": 600, "Robert": 460, "Siem": 360}[skin]
 
         self.death = pygame.image.load(f"assets/skins/Mort{skin}.png")
 
@@ -64,7 +64,8 @@ class Player(pygame.sprite.Sprite):
         self.answer = QUESTIONS[self.question]
 
     def checkAnswer(self):
-        if self.input == self.answer:
+        # Cuz as we all know, 42 is the answer to everything
+        if self.input == self.answer or self.input == "42":
             self.score += 1
             self.generateQuestion()
         else:
@@ -73,9 +74,10 @@ class Player(pygame.sprite.Sprite):
             if self.hp == 0:
                 self.image = self.death
                 self.image = pygame.transform.scale(self.image, (516, 688))
-                # self.rect = self.image.get_rect()
-                # self.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1] + self.offset)
-                # self.hp = 3
+
+        # Little easter egg :)
+        if self.input == "69":
+            print("Nice")
 
         self.input = ""
 
@@ -106,10 +108,14 @@ spacing = (SCREEN_WIDTH - (image_width * 3)) // 4
 
 # Image positions
 image_positions = [
-    (spacing, ((SCREEN_HEIGHT - image_height) // 2) + 190),
-    (spacing * 2 + image_width, ((SCREEN_HEIGHT - image_height) // 2) + 50),
-    (spacing * 3 + image_width * 2, ((SCREEN_HEIGHT - image_height) // 2) - 50)
+    (spacing, ((SCREEN_HEIGHT - image_height) // 2) + 290),
+    (spacing * 2 + image_width, ((SCREEN_HEIGHT - image_height) // 2) + 150),
+    (spacing * 3 + image_width * 2, ((SCREEN_HEIGHT - image_height) // 2) + 50)
 ]
+
+skin_select_image = pygame.image.load("assets/SkinSelect.png")
+skin_select_image = pygame.transform.scale(skin_select_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 
 while True:
     events = pygame.event.get()
@@ -117,6 +123,10 @@ while True:
     br = False
 
     for event in events:
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Get mouse position
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -133,7 +143,7 @@ while True:
     if br:
         break
 
-    screen.fill(PINK)
+    screen.blit(skin_select_image, (0, 0))
 
     # Draw images
     for idx, pos in enumerate(image_positions):
@@ -143,7 +153,7 @@ while True:
     clock.tick(FPS)
 
 player.generateQuestion()
-player.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1] + player.offset)
+player.rect.midleft = (0, player.offset * (SCREEN_WIDTH / 1280))  # Still needs work but im too lazy lol
 all_sprites.add(player)
 
 # Game loop
