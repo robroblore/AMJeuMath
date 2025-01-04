@@ -30,7 +30,7 @@ pygame.display.set_caption('Cool math game!')
 running = True
 
 # Font setup
-font = pygame.font.Font("STIXTwoMath-Regular.ttf", FONT_SIZE)
+font = pygame.font.Font("assets/STIXTwoMath-Regular.ttf", FONT_SIZE)
 
 QUESTIONS = dict()
 
