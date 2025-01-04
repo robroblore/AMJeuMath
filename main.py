@@ -13,6 +13,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+PINK = (255, 16, 240)
 
 # Window variables
 SCREEN_WIDTH = 1280
@@ -41,16 +42,22 @@ with open("QUESTIONS.txt", "r", encoding='utf-8') as file:
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, skin="Robert"):
         super().__init__()
-        self.image = pygame.image.load("player.png")
+        self.image = pygame.image.load(f"assets/skins/Skin{skin}.png")
+        self.image = pygame.transform.scale(self.image, (516, 688))
         self.rect = self.image.get_rect()
+
+        self.offset = {"Katha": 240, "Robert": 100, "Siem": 0}[skin]
+
+        self.death = pygame.image.load(f"assets/skins/Mort{skin}.png")
 
         self.question = ""
         self.answer = ""
 
         self.input = ""
 
+        self.hp = 3
         self.score = 0
 
     def generateQuestion(self):
@@ -62,19 +69,82 @@ class Player(pygame.sprite.Sprite):
             self.score += 1
             self.generateQuestion()
         else:
-            self.score -= 1
+            self.hp -= 1
+
+            if self.hp == 0:
+                self.image = self.death
+                self.image = pygame.transform.scale(self.image, (516, 688))
+                # self.rect = self.image.get_rect()
+                # self.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1] + self.offset)
+                # self.hp = 3
 
         self.input = ""
 
-bg = pygame.image.load("bg.png").convert()
+
+bg = pygame.image.load("assets/bg.png").convert()
+bg = pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 tiles = math.ceil(SCREEN_WIDTH / bg.get_width()) + 1
 scroll = 0
 
 all_sprites = pygame.sprite.Group()
 
-player = Player()
+# Load images
+images = [
+    pygame.image.load("assets/skins/SkinKatha.png"),
+    pygame.image.load("assets/skins/SkinRobert.png"),
+    pygame.image.load("assets/skins/SkinSiem.png")
+]
+
+# Image dimensions
+image_width = 516
+image_height = 688
+
+# Scale images to 516x688
+images = [pygame.transform.scale(img, (image_width, image_height)) for img in images]
+
+# Calculate spacing between images
+spacing = (SCREEN_WIDTH - (image_width * 3)) // 4
+
+# Image positions
+image_positions = [
+    (spacing, ((SCREEN_HEIGHT - image_height) // 2) + 190),
+    (spacing * 2 + image_width, ((SCREEN_HEIGHT - image_height) // 2) + 50),
+    (spacing * 3 + image_width * 2, ((SCREEN_HEIGHT - image_height) // 2) - 50)
+]
+
+while True:
+    events = pygame.event.get()
+
+    br = False
+
+    for event in events:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Get mouse position
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+
+            if mouse_x < SCREEN_WIDTH // 3:
+                player = Player("Katha")
+            elif mouse_x < 2 * SCREEN_WIDTH // 3:
+                player = Player("Robert")
+            else:
+                player = Player("Siem")
+
+            br = True
+
+    if br:
+        break
+
+    screen.fill(PINK)
+
+    # Draw images
+    for idx, pos in enumerate(image_positions):
+        screen.blit(images[idx], pos)
+
+    pygame.display.update()
+    clock.tick(FPS)
+
 player.generateQuestion()
-player.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1])
+player.rect.center = (screen_rect.center[0] - 500, screen_rect.center[1] + player.offset)
 all_sprites.add(player)
 
 # Game loop
@@ -84,7 +154,8 @@ while running:
     # Draw background
     for i in range(tiles):
         screen.blit(bg, (i * bg.get_width() + scroll, 0))
-    scroll -= 5
+    if player.hp > 0:
+        scroll -= 5
     if abs(scroll) > bg.get_width():
         scroll = 0
 
@@ -97,7 +168,7 @@ while running:
                 player.checkAnswer()
             elif event.key == pygame.K_BACKSPACE:
                 player.input = player.input[:-1]
-            else:
+            elif player.hp > 0:
                 player.input += event.unicode
 
         if event.type == pygame.QUIT:
@@ -109,19 +180,35 @@ while running:
     # Draw text
     input_text = font.render(player.input, True, BLACK)
     input_text_rect = input_text.get_rect(center=screen_rect.center)
-    input_text_rect.y += 200
+    input_text_rect.y += 69
     screen.blit(input_text, input_text_rect)
 
-    score_text = font.render(str(player.score), True, BLACK)
-    score_text_rect = score_text.get_rect()
-    score_text_rect.topright = (screen_rect.right - 10, 10)
-    screen.blit(score_text, score_text_rect)
+    if player.hp > 0:
+        score_text = font.render(str(player.score), True, BLACK)
+        score_text_rect = score_text.get_rect()
+        score_text_rect.topright = (screen_rect.right - 10, 10)
+        screen.blit(score_text, score_text_rect)
 
     question_text = font.render(player.question, True, BLACK)
     question_text_rect = question_text.get_rect(center=screen_rect.center)
     question_text_rect.y -= 200
     screen.blit(question_text, question_text_rect)
 
+    if player.hp == 0:
+        game_over_text = font.render("YOU DIED!", True, RED)
+        screen.blit(game_over_text, game_over_text.get_rect(center=screen_rect.center))
+
+        score_text = font.render("Final score: " + str(player.score), True, BLACK)
+        score_text_rect = score_text.get_rect(center=screen_rect.center)
+        score_text_rect.y += 100
+        screen.blit(score_text, score_text_rect)
+
+    # Draw hp
+    hp_image = pygame.image.load(f"assets/hearths/{player.hp}.png")
+    hp_image = pygame.transform.scale(hp_image, (774, 1032))
+    hp_image_rect = hp_image.get_rect()
+    hp_image_rect.topleft = (-250, -200)
+    screen.blit(hp_image, hp_image_rect)
 
     pygame.display.update()
     clock.tick(FPS)
